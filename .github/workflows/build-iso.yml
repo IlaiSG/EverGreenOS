@@ -53,60 +53,13 @@ jobs:
             --mirror-binary https://deb.debian.org/debian \
             --mirror-binary-security https://security.debian.org/debian-security
 
-          # Copy first-party live-build configuration into the generated config tree.
           if [ -d ../distribution/config ]; then
             cp -a ../distribution/config/. config/
           fi
 
-          # Stage the BIOS boot files from the paths provided by Ubuntu packages.
-          ISOLINUX_BIN="$(dpkg -L isolinux | grep -E '/isolinux\.bin
-          mkdir -p config/package-lists
-          cp ../distribution/package-lists/evergreen.list.chroot config/package-lists/
-          echo "Generated Evergreen package list:"
-          cat config/package-lists/evergreen.list.chroot
-
-      - name: Build ISO
-        run: |
-          cd build
-          sudo lb build
-
-      - name: Verify ISO exists
-        run: |
-          test -n "$(find build -maxdepth 1 -type f -name '*.iso' -print -quit)"
-          ls -lh build/*.iso
-
-      - name: Upload ISO
-        uses: actions/upload-artifact@v4
-        with:
-          name: evergreenos-amd64-iso
-          path: build/*.iso
-          if-no-files-found: error
-          retention-days: 7
- | head -n 1)"
-          VESAMENU="$(dpkg -L syslinux-common | grep -E '/vesamenu\.c32
-          mkdir -p config/package-lists
-          cp ../distribution/package-lists/evergreen.list.chroot config/package-lists/
-          echo "Generated Evergreen package list:"
-          cat config/package-lists/evergreen.list.chroot
-
-      - name: Build ISO
-        run: |
-          cd build
-          sudo lb build
-
-      - name: Verify ISO exists
-        run: |
-          test -n "$(find build -maxdepth 1 -type f -name '*.iso' -print -quit)"
-          ls -lh build/*.iso
-
-      - name: Upload ISO
-        uses: actions/upload-artifact@v4
-        with:
-          name: evergreenos-amd64-iso
-          path: build/*.iso
-          if-no-files-found: error
-          retention-days: 7
- | head -n 1)"
+          # Resolve bootloader files from the installed Ubuntu packages.
+          ISOLINUX_BIN="$(dpkg -L isolinux | grep -E '/isolinux\\.bin$' | head -n 1)"
+          VESAMENU="$(dpkg -L syslinux-common | grep -E '/vesamenu\\.c32$' | head -n 1)"
           test -n "$ISOLINUX_BIN"
           test -n "$VESAMENU"
           mkdir -p config/bootloaders/isolinux
@@ -114,7 +67,7 @@ jobs:
           cp -L "$VESAMENU" config/bootloaders/isolinux/vesamenu.c32
           test -s config/bootloaders/isolinux/isolinux.bin
           test -s config/bootloaders/isolinux/vesamenu.c32
-          echo "Prepared local ISOLINUX bootloader files:"
+          echo "Prepared ISOLINUX bootloader files:"
           ls -l config/bootloaders/isolinux/
 
           mkdir -p config/package-lists
