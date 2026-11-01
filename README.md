@@ -1,28 +1,39 @@
 # EverGreenOS
 
-EverGreenOS is an independent Linux-based operating system project within the EverGreen ecosystem.
+**EverGreenOS** is an independently designed desktop operating system built on the Linux kernel, with Debian providing the initial distribution and package-management foundation.
 
-## Vision
+Our ambition is a coherent, integrated computing experience: first-party Evergreen desktop software, system settings, services and applications, built on dependable low-level infrastructure.
 
-Build a thoughtfully designed, capable desktop operating system for personal computers, with a distinctive Evergreen identity and a foundation that can grow into a more integrated computing environment.
+## Project principles
 
-## Initial direction
+- **Evergreen identity:** Debian is the foundation, not the product identity.
+- **Practical engineering:** use proven components where they serve us well; build first-party components where they create a real advantage.
+- **Replaceable layers:** keep the Evergreen experience distinct from the underlying distribution.
+- **Test before claiming:** boot images in QEMU and document what has actually been tested.
 
-- **Base:** Debian GNU/Linux
-- **Initial target:** x86-64 PCs
-- **First milestone:** a reproducible, bootable installation image
-- **Development approach:** keep the build process automated and the source code version-controlled
+## Initial technical direction
 
-These are initial project decisions and may evolve as the system develops.
+- Linux kernel
+- Debian 13 (Trixie) foundation
+- AMD64 live image first
+- Debian Live Build and GitHub Actions for reproducible image creation
+- XFCE as a temporary graphical baseline while the Evergreen desktop is developed
 
-## Project status
+## First milestone
 
-Early development. The immediate work is to establish the build system, produce a bootable image, and test it in an emulator before moving on to desktop customisation.
+Produce a reproducible, bootable AMD64 ISO, identify itself as EverGreenOS, and test it in QEMU. The current image is an experimental development build, not a production release.
 
-## Guiding principle
+## Repository map
 
-Build a reliable operating system first; make it unmistakably Evergreen through careful, deliberate improvements.
+- `distribution/` — live-image configuration and package selection
+- `desktop/` — plans and, later, first-party desktop implementation
+- `docs/` — architecture, roadmap and build instructions
+- `.github/workflows/` — automated builds
 
-## Contributing
+## Build
 
-The project is being organised. Contribution guidelines will be added when the development workflow is established.
+See [docs/building.md](docs/building.md) for instructions.
+
+## Status
+
+Early development. A successful build and emulator test are still required before the first milestone can be considered complete.
