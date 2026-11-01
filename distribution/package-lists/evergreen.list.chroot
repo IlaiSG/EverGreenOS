@@ -1,0 +1,7 @@
+# Minimal desktop foundation for the first live image
+task-xfce-desktop
+live-boot
+live-config
+sudo
+network-manager
+firefox-esr
