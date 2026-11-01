@@ -1,0 +1,10 @@
+.DS_Store
+Thumbs.db
+*.iso
+*.img
+*.qcow2
+*.raw
+*.log
+/build/
+/dist/
+/.cache/
