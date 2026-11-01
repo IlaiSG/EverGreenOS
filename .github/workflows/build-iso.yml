@@ -18,21 +18,36 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
-      - name: Install live-build
+
+      - name: Install live-build and Debian archive keyring
         run: |
           sudo apt-get update
-          sudo apt-get install -y live-build
-      - name: Configure image
+          sudo apt-get install -y live-build debootstrap debian-archive-keyring
+
+      - name: Configure Debian live image
         run: |
           mkdir -p build
           cd build
-          lb config --distribution trixie --architectures amd64 --binary-images iso-hybrid --archive-areas "main contrib non-free-firmware" --debian-installer false
+          lb config \
+            --distribution trixie \
+            --architectures amd64 \
+            --binary-images iso-hybrid \
+            --archive-areas "main contrib non-free-firmware" \
+            --debian-installer false \
+            --mirror-bootstrap http://deb.debian.org/debian \
+            --mirror-chroot http://deb.debian.org/debian \
+            --mirror-chroot-security http://security.debian.org/debian-security \
+            --mirror-binary http://deb.debian.org/debian \
+            --mirror-binary-security http://security.debian.org/debian-security
+
           mkdir -p config/package-lists
           cp ../distribution/package-lists/evergreen.list.chroot config/package-lists/
+
       - name: Build ISO
         run: |
           cd build
           sudo lb build
+
       - name: Upload ISO
         uses: actions/upload-artifact@v4
         with:
