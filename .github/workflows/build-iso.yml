@@ -29,6 +29,7 @@ jobs:
           mkdir -p build
           cd build
           lb config \
+            --mode debian \
             --distribution trixie \
             --architectures amd64 \
             --binary-images iso-hybrid \
