@@ -33,7 +33,7 @@ jobs:
           test -n "$VESAMENU"
           sudo cp "$ISOLINUX_BIN" /root/isolinux/isolinux.bin
           sudo cp "$VESAMENU" /root/isolinux/vesamenu.c32
-          ls -l /root/isolinux
+          sudo ls -l /root/isolinux
 
       - name: Patch live-build Debian firmware index path
         run: |
