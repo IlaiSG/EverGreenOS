@@ -24,17 +24,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y live-build debootstrap debian-archive-keyring isolinux syslinux-common
 
-      - name: Prepare BIOS bootloader files for live-build
-        run: |
-          sudo mkdir -p /root/isolinux
-          ISOLINUX_BIN="$(find /usr/lib -type f -name isolinux.bin -print -quit)"
-          VESAMENU="$(find /usr/lib -type f -name vesamenu.c32 -print -quit)"
-          test -n "$ISOLINUX_BIN"
-          test -n "$VESAMENU"
-          sudo cp "$ISOLINUX_BIN" /root/isolinux/isolinux.bin
-          sudo cp "$VESAMENU" /root/isolinux/vesamenu.c32
-          sudo ls -l /root/isolinux
-
       - name: Patch live-build Debian firmware index path
         run: |
           SCRIPT=/usr/lib/live/build/lb_chroot_linux-image
@@ -68,6 +57,15 @@ jobs:
           if [ -d ../distribution/config ]; then
             cp -a ../distribution/config/. config/
           fi
+
+          # Use a local, self-contained ISOLINUX tree so live-build does not
+          # depend on absolute symlinks being resolvable inside its chroot.
+          mkdir -p config/bootloaders/isolinux
+          cp -aL /usr/share/live/build/bootloaders/isolinux/. config/bootloaders/isolinux/
+          test -s config/bootloaders/isolinux/isolinux.bin
+          test -s config/bootloaders/isolinux/vesamenu.c32
+          echo "Prepared local ISOLINUX bootloader files:"
+          ls -l config/bootloaders/isolinux/
 
           mkdir -p config/package-lists
           cp ../distribution/package-lists/evergreen.list.chroot config/package-lists/
