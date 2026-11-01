@@ -7,3 +7,4 @@ systemd-sysv
 sudo
 network-manager
 firefox-esr
+isolinux
