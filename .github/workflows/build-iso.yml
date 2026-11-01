@@ -44,6 +44,7 @@ jobs:
             --architectures amd64 \
             --binary-images iso-hybrid \
             --archive-areas "main contrib non-free-firmware" \
+            --initsystem systemd \
             --debian-installer false \
             --security false \
             --mirror-bootstrap https://deb.debian.org/debian \
@@ -59,6 +60,8 @@ jobs:
 
           mkdir -p config/package-lists
           cp ../distribution/package-lists/evergreen.list.chroot config/package-lists/
+          echo "Generated live package list:"
+          cat config/package-lists/live.list.chroot
 
       - name: Build ISO
         run: |
