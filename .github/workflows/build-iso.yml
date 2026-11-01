@@ -24,6 +24,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y live-build debootstrap debian-archive-keyring
 
+      - name: Patch live-build Debian firmware index path
+        run: |
+          SCRIPT=/usr/lib/live/build/lb_chroot_linux-image
+          sudo test -f "$SCRIPT"
+          sudo sed -i \
+            -e 's|/dists/${LB_PARENT_DISTRIBUTION}/Contents-|/dists/${LB_PARENT_DISTRIBUTION}/main/Contents-|g' \
+            -e 's|/dists/${LB_DISTRIBUTION}/Contents-|/dists/${LB_DISTRIBUTION}/main/Contents-|g' \
+            "$SCRIPT"
+          grep -n 'Contents-' "$SCRIPT"
+
       - name: Configure Debian live image
         run: |
           mkdir -p build
