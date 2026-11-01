@@ -2,6 +2,8 @@
 task-xfce-desktop
 live-boot
 live-config
+live-config-systemd
+systemd-sysv
 sudo
 network-manager
 firefox-esr
