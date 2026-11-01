@@ -58,10 +58,60 @@ jobs:
             cp -a ../distribution/config/. config/
           fi
 
-          # Use a local, self-contained ISOLINUX tree so live-build does not
-          # depend on absolute symlinks being resolvable inside its chroot.
+          # Stage the BIOS boot files from the paths provided by Ubuntu packages.
+          ISOLINUX_BIN="$(dpkg -L isolinux | grep -E '/isolinux\.bin
+          mkdir -p config/package-lists
+          cp ../distribution/package-lists/evergreen.list.chroot config/package-lists/
+          echo "Generated Evergreen package list:"
+          cat config/package-lists/evergreen.list.chroot
+
+      - name: Build ISO
+        run: |
+          cd build
+          sudo lb build
+
+      - name: Verify ISO exists
+        run: |
+          test -n "$(find build -maxdepth 1 -type f -name '*.iso' -print -quit)"
+          ls -lh build/*.iso
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: evergreenos-amd64-iso
+          path: build/*.iso
+          if-no-files-found: error
+          retention-days: 7
+ | head -n 1)"
+          VESAMENU="$(dpkg -L syslinux-common | grep -E '/vesamenu\.c32
+          mkdir -p config/package-lists
+          cp ../distribution/package-lists/evergreen.list.chroot config/package-lists/
+          echo "Generated Evergreen package list:"
+          cat config/package-lists/evergreen.list.chroot
+
+      - name: Build ISO
+        run: |
+          cd build
+          sudo lb build
+
+      - name: Verify ISO exists
+        run: |
+          test -n "$(find build -maxdepth 1 -type f -name '*.iso' -print -quit)"
+          ls -lh build/*.iso
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: evergreenos-amd64-iso
+          path: build/*.iso
+          if-no-files-found: error
+          retention-days: 7
+ | head -n 1)"
+          test -n "$ISOLINUX_BIN"
+          test -n "$VESAMENU"
           mkdir -p config/bootloaders/isolinux
-          cp -aL /usr/share/live/build/bootloaders/isolinux/. config/bootloaders/isolinux/
+          cp -L "$ISOLINUX_BIN" config/bootloaders/isolinux/isolinux.bin
+          cp -L "$VESAMENU" config/bootloaders/isolinux/vesamenu.c32
           test -s config/bootloaders/isolinux/isolinux.bin
           test -s config/bootloaders/isolinux/vesamenu.c32
           echo "Prepared local ISOLINUX bootloader files:"
