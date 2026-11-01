@@ -1,0 +1,12 @@
+NAME="EverGreenOS"
+PRETTY_NAME="EverGreenOS (development)"
+ID=evergreenos
+ID_LIKE=debian
+VERSION="0.1.0-dev"
+VERSION_ID="0.1.0"
+VERSION_CODENAME="evergreen"
+HOME_URL="https://github.com/IlaiSG/EverGreenOS"
+DOCUMENTATION_URL="https://github.com/IlaiSG/EverGreenOS"
+SUPPORT_URL="https://github.com/IlaiSG/EverGreenOS/issues"
+BUG_REPORT_URL="https://github.com/IlaiSG/EverGreenOS/issues"
+BUILD_ID="development"
