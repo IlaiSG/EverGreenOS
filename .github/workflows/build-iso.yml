@@ -32,7 +32,7 @@ jobs:
           mkdir -p build
           cd build
           set -o pipefail
-          bash -x /usr/lib/live/build/config --debug --ignore-system-defaults \
+          lb config --debug --ignore-system-defaults \
             --mode debian \
             --distribution trixie \
             --architectures amd64 \
