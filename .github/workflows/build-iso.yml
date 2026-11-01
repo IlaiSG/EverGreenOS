@@ -38,8 +38,6 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          # Ubuntu's packaged live-build may not create this directory itself.
-          mkdir -p config
           lb config \
             --mode debian \
             --distribution trixie \
