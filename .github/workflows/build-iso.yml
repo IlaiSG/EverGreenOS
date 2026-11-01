@@ -14,31 +14,25 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: debian:trixie
     timeout-minutes: 180
     steps:
       - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Install live-build and Debian archive keyring
+      - name: Install Debian live-build tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y live-build debootstrap debian-archive-keyring isolinux syslinux-common
-
-      - name: Patch live-build Debian firmware index path
-        run: |
-          SCRIPT=/usr/lib/live/build/lb_chroot_linux-image
-          sudo test -f "$SCRIPT"
-          sudo sed -i \
-            -e 's|/dists/${LB_PARENT_DISTRIBUTION}/Contents-|/dists/${LB_PARENT_DISTRIBUTION}/main/Contents-|g' \
-            -e 's|/dists/${LB_DISTRIBUTION}/Contents-|/dists/${LB_DISTRIBUTION}/main/Contents-|g' \
-            "$SCRIPT"
-          grep -n 'Contents-' "$SCRIPT"
+          apt-get update
+          apt-get install -y live-build debootstrap debian-archive-keyring isolinux syslinux-common
+          cat /etc/os-release
+          apt-cache policy live-build debootstrap
 
       - name: Configure Debian live image
         run: |
           mkdir -p build
           cd build
-          lb config --debug --ignore-system-defaults \
+          set -o pipefail
+          bash -x "$(command -v lb)" config --debug --ignore-system-defaults \
             --mode debian \
             --distribution trixie \
             --architectures amd64 \
@@ -51,13 +45,13 @@ jobs:
             --mirror-chroot https://deb.debian.org/debian \
             --mirror-chroot-security https://security.debian.org/debian-security \
             --mirror-binary https://deb.debian.org/debian \
-            --mirror-binary-security https://security.debian.org/debian-security
+            --mirror-binary-security https://security.debian.org/debian-security 2>&1 | tee ../lb-config-trace.log
 
           if [ -d ../distribution/config ]; then
             cp -a ../distribution/config/. config/
           fi
 
-          # Resolve bootloader files from the installed Ubuntu packages.
+          # Resolve bootloader files from the installed Debian packages.
           ISOLINUX_BIN="$(dpkg -L isolinux | grep -E '/isolinux\\.bin$' | head -n 1)"
           VESAMENU="$(dpkg -L syslinux-common | grep -E '/vesamenu\\.c32$' | head -n 1)"
           test -n "$ISOLINUX_BIN"
@@ -78,7 +72,7 @@ jobs:
       - name: Build ISO
         run: |
           cd build
-          sudo lb build
+          lb build
 
       - name: Verify ISO exists
         run: |
