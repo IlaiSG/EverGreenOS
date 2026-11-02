@@ -14,7 +14,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: debian:trixie
+    container:
+      image: debian:trixie
+      options: --privileged
     timeout-minutes: 180
     steps:
       - name: Check out source
