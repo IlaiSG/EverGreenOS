@@ -23,7 +23,7 @@ jobs:
       - name: Install Debian live-build tools
         run: |
           apt-get update
-          apt-get install -y live-build debootstrap debian-archive-keyring isolinux syslinux-common strace
+          apt-get install -y live-build debootstrap debian-archive-keyring isolinux syslinux-common
           cat /etc/os-release
           apt-cache policy live-build debootstrap
 
@@ -32,8 +32,7 @@ jobs:
           mkdir -p build
           cd build
           set -o pipefail
-          set +e
-          strace -f -e trace=file -o ../lb-config.strace lb config --debug --ignore-system-defaults \
+          lb config --debug --ignore-system-defaults \
             --mode debian \
             --distribution trixie \
             --architectures amd64 \
@@ -47,26 +46,32 @@ jobs:
             --mirror-chroot-security https://security.debian.org/debian-security \
             --mirror-binary https://deb.debian.org/debian \
             --mirror-binary-security https://security.debian.org/debian-security 2>&1 | tee ../lb-config-trace.log
-          LB_CONFIG_STATUS=$?
-          set -e
-          echo "lb config pipeline exit status: ${LB_CONFIG_STATUS}"
-          if [ "${LB_CONFIG_STATUS}" -ne 0 ]; then
-            echo "Recent failed filesystem operations:"
-            grep ' = -1 ' ../lb-config.strace | tail -n 60 || true
-            echo "Configuration stage directory:"
-            ls -la .build || true
-            exit "${LB_CONFIG_STATUS}"
-          fi
 
           if [ -d ../distribution/config ]; then
             cp -a ../distribution/config/. config/
           fi
 
           # Resolve bootloader files from the installed Debian packages.
-          ISOLINUX_BIN="$(dpkg -L isolinux | grep -E '/isolinux\\.bin$' | head -n 1)"
-          VESAMENU="$(dpkg -L syslinux-common | grep -E '/vesamenu\\.c32$' | head -n 1)"
-          test -n "$ISOLINUX_BIN"
-          test -n "$VESAMENU"
+          echo "Locating bootloader files from Debian packages..."
+          ISOLINUX_BIN="$(dpkg -L isolinux | awk 'tolower($0) ~ /\\/isolinux\\.bin$/ { print; exit }')"
+          VESAMENU="$(dpkg -L syslinux-common | awk 'tolower($0) ~ /\\/vesamenu\\.c32$/ { print; exit }')"
+
+          if [ -z "$ISOLINUX_BIN" ]; then
+            ISOLINUX_BIN="$(find /usr/lib /usr/share -type f -iname isolinux.bin -print -quit 2>/dev/null || true)"
+          fi
+          if [ -z "$VESAMENU" ]; then
+            VESAMENU="$(find /usr/lib /usr/share -type f -iname vesamenu.c32 -print -quit 2>/dev/null || true)"
+          fi
+
+          echo "ISOLINUX binary: ${ISOLINUX_BIN:-NOT FOUND}"
+          echo "VESA menu: ${VESAMENU:-NOT FOUND}"
+          if [ -z "$ISOLINUX_BIN" ] || [ -z "$VESAMENU" ]; then
+            echo "Installed ISOLINUX package files:"
+            dpkg -L isolinux || true
+            echo "Installed syslinux-common package files:"
+            dpkg -L syslinux-common || true
+            exit 1
+          fi
           mkdir -p config/bootloaders/isolinux
           cp -L "$ISOLINUX_BIN" config/bootloaders/isolinux/isolinux.bin
           cp -L "$VESAMENU" config/bootloaders/isolinux/vesamenu.c32
