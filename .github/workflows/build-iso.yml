@@ -53,8 +53,8 @@ jobs:
 
           # Resolve bootloader files from the installed Debian packages.
           echo "Locating bootloader files from Debian packages..."
-          ISOLINUX_BIN="$(dpkg -L isolinux | awk 'tolower($0) ~ /\\/isolinux\\.bin$/ { print; exit }')"
-          VESAMENU="$(dpkg -L syslinux-common | awk 'tolower($0) ~ /\\/vesamenu\\.c32$/ { print; exit }')"
+          ISOLINUX_BIN="$(dpkg -L isolinux | awk 'tolower($0) ~ /isolinux[.]bin$/ { print; exit }')"
+          VESAMENU="$(dpkg -L syslinux-common | awk 'tolower($0) ~ /vesamenu[.]c32$/ { print; exit }')"
 
           if [ -z "$ISOLINUX_BIN" ]; then
             ISOLINUX_BIN="$(find /usr/lib /usr/share -type f -iname isolinux.bin -print -quit 2>/dev/null || true)"
