@@ -32,7 +32,8 @@ jobs:
           mkdir -p build
           cd build
           set -o pipefail
-          if ! strace -f -e trace=file -o ../lb-config.strace lb config --debug --ignore-system-defaults \
+          set +e
+          strace -f -e trace=file -o ../lb-config.strace lb config --debug --ignore-system-defaults \
             --mode debian \
             --distribution trixie \
             --architectures amd64 \
@@ -45,12 +46,16 @@ jobs:
             --mirror-chroot https://deb.debian.org/debian \
             --mirror-chroot-security https://security.debian.org/debian-security \
             --mirror-binary https://deb.debian.org/debian \
-            --mirror-binary-security https://security.debian.org/debian-security 2>&1 | tee ../lb-config-trace.log; then
-            echo "live-build config failed; recent failed filesystem operations:"
+            --mirror-binary-security https://security.debian.org/debian-security 2>&1 | tee ../lb-config-trace.log
+          LB_CONFIG_STATUS=$?
+          set -e
+          echo "lb config pipeline exit status: ${LB_CONFIG_STATUS}"
+          if [ "${LB_CONFIG_STATUS}" -ne 0 ]; then
+            echo "Recent failed filesystem operations:"
             grep ' = -1 ' ../lb-config.strace | tail -n 60 || true
             echo "Configuration stage directory:"
             ls -la .build || true
-            exit 1
+            exit "${LB_CONFIG_STATUS}"
           fi
 
           if [ -d ../distribution/config ]; then
