@@ -23,7 +23,7 @@ jobs:
       - name: Install Debian live-build tools
         run: |
           apt-get update
-          apt-get install -y live-build debootstrap debian-archive-keyring isolinux syslinux-common
+          apt-get install -y live-build debootstrap debian-archive-keyring isolinux syslinux-common strace
           cat /etc/os-release
           apt-cache policy live-build debootstrap
 
@@ -32,20 +32,26 @@ jobs:
           mkdir -p build
           cd build
           set -o pipefail
-          lb config --debug --ignore-system-defaults \
+          if ! strace -f -e trace=file -o ../lb-config.strace lb config --debug --ignore-system-defaults \
             --mode debian \
             --distribution trixie \
             --architectures amd64 \
             --binary-images iso-hybrid \
             --archive-areas "main contrib non-free-firmware" \
             --initsystem systemd \
-            --debian-installer false \
+            --debian-installer none \
             --security false \
             --mirror-bootstrap https://deb.debian.org/debian \
             --mirror-chroot https://deb.debian.org/debian \
             --mirror-chroot-security https://security.debian.org/debian-security \
             --mirror-binary https://deb.debian.org/debian \
-            --mirror-binary-security https://security.debian.org/debian-security 2>&1 | tee ../lb-config-trace.log
+            --mirror-binary-security https://security.debian.org/debian-security 2>&1 | tee ../lb-config-trace.log; then
+            echo "live-build config failed; recent failed filesystem operations:"
+            grep ' = -1 ' ../lb-config.strace | tail -n 60 || true
+            echo "Configuration stage directory:"
+            ls -la .build || true
+            exit 1
+          fi
 
           if [ -d ../distribution/config ]; then
             cp -a ../distribution/config/. config/
